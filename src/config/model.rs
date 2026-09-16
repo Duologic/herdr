@@ -868,8 +868,14 @@ pub struct IndexedKeysConfig {
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct WorktreesConfig {
-    /// Root directory under which Herdr creates <repo>/<branch-slug> checkouts.
+    /// Checkout root. Supports {repo_root}, {repo_parent}, and {repo_name} placeholders.
     pub directory: String,
+}
+
+impl WorktreesConfig {
+    pub(crate) fn diagnostics(&self) -> Vec<String> {
+        crate::worktree::worktree_directory_diagnostics(&self.directory)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
@@ -1578,6 +1584,27 @@ directory = "~/Projects/herdr-worktrees"
 "#;
         let config: Config = toml::from_str(toml).unwrap();
         assert_eq!(config.worktrees.directory, "~/Projects/herdr-worktrees");
+
+        let config: Config = toml::from_str(
+            r#"
+[worktrees]
+directory = "{repo_root}/wt"
+"#,
+        )
+        .unwrap();
+        assert_eq!(config.worktrees.directory, "{repo_root}/wt");
+
+        let config: Config = toml::from_str(
+            r#"
+[worktrees]
+directory = "{repo_nam}/wt"
+"#,
+        )
+        .unwrap();
+        assert!(config
+            .collect_diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.contains("unknown placeholder {repo_nam}")));
     }
 
     #[test]

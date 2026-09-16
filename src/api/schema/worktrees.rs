@@ -64,6 +64,8 @@ pub struct WorktreeSourceInfo {
     pub repo_root: String,
     pub source_checkout_path: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checkout_path_prefix: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_workspace_id: Option<String>,
 }
 

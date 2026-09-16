@@ -73,6 +73,7 @@ fn worktree_list_result(open_workspace_id: Option<&str>) -> crate::api::schema::
             repo_name: "repo".into(),
             repo_root: "/repo".into(),
             source_checkout_path: "/repo".into(),
+            checkout_path_prefix: None,
             source_workspace_id: Some("ws_1".into()),
         },
         worktrees: vec![crate::api::schema::WorktreeInfo {

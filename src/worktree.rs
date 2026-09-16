@@ -2,6 +2,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_WORKTREE_PREFIX: &str = "worktree";
+const WORKTREE_DIRECTORY_PLACEHOLDERS: [&str; 3] = ["repo_root", "repo_parent", "repo_name"];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorktreeCommand {
@@ -168,8 +169,69 @@ fn repository_git_args(repo_root: &Path, trust_repository: bool) -> Vec<String> 
     args
 }
 
-pub(crate) fn default_checkout_path(root: &Path, repo_name: &str, branch: &str) -> PathBuf {
-    root.join(repo_name).join(branch_to_path_slug(branch))
+pub(crate) fn checkout_root(template: &str, repo_root: &Path, repo_name: &str) -> PathBuf {
+    let uses_placeholder = WORKTREE_DIRECTORY_PLACEHOLDERS
+        .iter()
+        .any(|name| template.contains(&format!("{{{name}}}")));
+    let repo_parent = repo_root.parent().unwrap_or(repo_root);
+    let rendered = template
+        .replace("{repo_root}", &repo_root.to_string_lossy())
+        .replace("{repo_parent}", &repo_parent.to_string_lossy())
+        .replace("{repo_name}", repo_name);
+    let root = expand_tilde_absolute_path(&rendered);
+
+    if uses_placeholder {
+        root
+    } else {
+        root.join(repo_name)
+    }
+}
+
+pub(crate) fn default_checkout_path(
+    template: &str,
+    repo_root: &Path,
+    repo_name: &str,
+    branch: &str,
+) -> PathBuf {
+    checkout_root(template, repo_root, repo_name).join(branch_to_path_slug(branch))
+}
+
+pub(crate) fn worktree_directory_diagnostics(template: &str) -> Vec<String> {
+    let mut diagnostics = Vec::new();
+    if template.trim().is_empty() {
+        diagnostics.push("worktrees.directory must not be empty".to_string());
+        return diagnostics;
+    }
+
+    let mut remainder = template;
+    while !remainder.is_empty() {
+        match (remainder.find('{'), remainder.find('}')) {
+            (Some(open), Some(close)) if close < open => {
+                diagnostics.push("worktrees.directory has an unmatched '}'".to_string());
+                remainder = &remainder[close + 1..];
+            }
+            (Some(open), _) => {
+                remainder = &remainder[open + 1..];
+                let Some(close) = remainder.find('}') else {
+                    diagnostics.push("worktrees.directory has an unclosed '{'".to_string());
+                    break;
+                };
+                let name = &remainder[..close];
+                if !WORKTREE_DIRECTORY_PLACEHOLDERS.contains(&name) {
+                    diagnostics.push(format!(
+                        "worktrees.directory has unknown placeholder {{{name}}}"
+                    ));
+                }
+                remainder = &remainder[close + 1..];
+            }
+            (None, Some(close)) => {
+                diagnostics.push("worktrees.directory has an unmatched '}'".to_string());
+                remainder = &remainder[close + 1..];
+            }
+            (None, None) => break,
+        }
+    }
+    diagnostics
 }
 
 pub(crate) fn build_worktree_remove_command(
@@ -784,11 +846,56 @@ prunable stale
     fn default_checkout_path_appends_repo_and_branch_slug() {
         assert_eq!(
             default_checkout_path(
-                Path::new("/home/me/.herdr/worktrees"),
+                "/home/me/.herdr/worktrees",
+                Path::new("/home/me/herdr"),
                 "herdr",
                 "worktree/brave-river",
             ),
             PathBuf::from("/home/me/.herdr/worktrees/herdr/worktree-brave-river")
+        );
+    }
+
+    #[test]
+    fn default_checkout_path_resolves_repository_placeholders() {
+        let repo = Path::new("/home/me/repos/herdr.git");
+        assert_eq!(
+            default_checkout_path("{repo_root}/wt", repo, "herdr", "feature/api"),
+            PathBuf::from("/home/me/repos/herdr.git/wt/feature-api")
+        );
+        assert_eq!(
+            default_checkout_path(
+                "{repo_parent}/{repo_name}.worktrees",
+                repo,
+                "herdr",
+                "feature/api",
+            ),
+            PathBuf::from("/home/me/repos/herdr.worktrees/feature-api")
+        );
+        assert_eq!(
+            default_checkout_path(
+                "/worktrees/{repo_name}/archive/{repo_name}",
+                repo,
+                "herdr",
+                "feature/api",
+            ),
+            PathBuf::from("/worktrees/herdr/archive/herdr/feature-api")
+        );
+    }
+
+    #[test]
+    fn worktree_directory_template_diagnostics_report_invalid_placeholders() {
+        assert!(worktree_directory_diagnostics("{repo_root}/wt").is_empty());
+        assert_eq!(
+            worktree_directory_diagnostics("{repo_nam}/{owner}/{repo_root"),
+            vec![
+                "worktrees.directory has unknown placeholder {repo_nam}",
+                "worktrees.directory has unknown placeholder {owner}",
+                "worktrees.directory has an unclosed '{'",
+            ]
+        );
+        assert_eq!(
+            worktree_directory_diagnostics("   "),
+            vec!["worktrees.directory must not be empty"]
         );
     }
 

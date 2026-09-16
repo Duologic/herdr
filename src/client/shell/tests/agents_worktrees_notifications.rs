@@ -1233,9 +1233,14 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
             if params.workspace_id.as_deref() == Some("ws_1")
     ));
     let request_id = request.id.clone();
+    let mut list_result = worktree_list_result(None);
+    let crate::api::schema::ResponseResult::WorktreeList { source, .. } = &mut list_result else {
+        unreachable!();
+    };
+    source.checkout_path_prefix = Some("/repo/wt".into());
     assert!(
         state
-            .handle_endpoint_result("boot-1", &request_id, Ok(worktree_list_result(None)))
+            .handle_endpoint_result("boot-1", &request_id, Ok(list_result))
             .0
     );
     let frame = state.compose(106, 30).expect("new worktree modal");
@@ -1261,7 +1266,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         &state.overlay,
         Some(ClientShellOverlay::WorktreeCreate(create))
             if create.checkout_path
-                == "/tmp/herdr-worktrees/repo/feature-client-shell"
+                == "/repo/wt/feature-client-shell"
     ));
     let submit = state.handle_input_bytes(b"\r");
     let [ClientShellAction::Endpoint { request, .. }] = &submit.actions[..] else {

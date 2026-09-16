@@ -393,6 +393,15 @@ impl App {
             repo_name: source.repo_name.clone(),
             repo_root: source.source_repo_root.display().to_string(),
             source_checkout_path: source.source_checkout_path.display().to_string(),
+            checkout_path_prefix: Some(
+                crate::worktree::checkout_root(
+                    &self.state.worktree_directory,
+                    &source.source_repo_root,
+                    &source.repo_name,
+                )
+                .display()
+                .to_string(),
+            ),
             source_workspace_id: source
                 .workspace_idx
                 .map(|idx| self.public_workspace_id(idx)),
@@ -752,7 +761,7 @@ mod tests {
         app.state.ensure_test_terminals();
         app.state.active = Some(0);
         app.state.selected = 0;
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         let workspace_id = app.state.workspaces[0].id.clone();
 
         let response = run_deferred_api_request(
@@ -856,7 +865,7 @@ mod tests {
         app.state.ensure_test_terminals();
         app.state.active = Some(0);
         app.state.selected = 0;
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         let plugin_root = install_event_plugin(&mut app, "deferred-create", "worktree.created");
         let (respond_to, response_rx) = response_channel();
 
@@ -935,7 +944,7 @@ mod tests {
         let parent_id = parent.id.clone();
         app.state.workspaces = vec![parent];
         app.state.ensure_test_terminals();
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         let request = || Request {
             id: "req".into(),
             method: crate::api::schema::Method::WorktreeCreate(WorktreeCreateParams {
@@ -1000,7 +1009,7 @@ mod tests {
         let parent_id = parent.id.clone();
         app.state.workspaces = vec![parent];
         app.state.ensure_test_terminals();
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         let request = || Request {
             id: "req".into(),
             method: crate::api::schema::Method::WorktreeCreate(WorktreeCreateParams {
@@ -1042,7 +1051,7 @@ mod tests {
         let repo = create_committed_repo("api-worktree-create-spawn-failure-repo");
         let worktree_root = unique_temp_path("api-worktree-create-spawn-failure-root");
         let mut app = app_with_parent(&repo);
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         let request = Request {
             id: "req".into(),
             method: crate::api::schema::Method::WorktreeCreate(WorktreeCreateParams {
@@ -1068,7 +1077,7 @@ mod tests {
         let repo = create_committed_repo("api-worktree-create-spawn-full-repo");
         let worktree_root = unique_temp_path("api-worktree-create-spawn-full-root");
         let mut app = app_with_parent(&repo);
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         while app
             .event_tx
             .try_send(AppEvent::UpdateReady {
@@ -1187,7 +1196,7 @@ mod tests {
         let worktree_root = unique_temp_path("api-worktree-create-cwd-root");
         let event_hub = crate::api::EventHub::default();
         let mut app = test_app_with_event_hub(event_hub.clone());
-        app.state.worktree_directory = worktree_root.clone();
+        app.state.worktree_directory = worktree_root.display().to_string();
         app.state.default_shell = test_shell().into();
 
         let response = run_deferred_api_request(

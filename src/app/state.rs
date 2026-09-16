@@ -802,7 +802,7 @@ pub struct AppState {
     /// Set when the headless server should ask attached clients to reload
     /// their client-local sound config from disk.
     pub request_client_config_reload: bool,
-    pub worktree_directory: std::path::PathBuf,
+    pub worktree_directory: String,
     /// Latest endpoint-owned release notes, cached outside render paths.
     pub latest_release_notes: Option<crate::release_notes::ReleaseNotes>,
     pub product_announcement: Option<ProductAnnouncementState>,
@@ -1046,7 +1046,7 @@ impl AppState {
             mode: Mode::Navigate,
             should_quit: false,
             request_client_config_reload: false,
-            worktree_directory: std::path::PathBuf::from("/tmp/herdr-worktrees"),
+            worktree_directory: "/tmp/herdr-worktrees".into(),
             latest_release_notes: None,
             product_announcement: None,
             view: ViewState {

@@ -249,7 +249,11 @@ pub(super) fn snapshot_with_completions(
         server_keybindings_toml: app.client_shell_keybindings_profile().map(str::to_owned),
         latest_release_notes_available: app.state.latest_release_notes_available,
         integration_updates_available: app.state.integration_updates_available(),
-        worktree_directory: app.state.worktree_directory.to_string_lossy().into_owned(),
+        worktree_directory: crate::worktree::expand_tilde_absolute_path(
+            &app.state.worktree_directory,
+        )
+        .to_string_lossy()
+        .into_owned(),
         release_notes,
         focused_workspace_id,
         focused_tab_id,

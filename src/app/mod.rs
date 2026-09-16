@@ -458,8 +458,7 @@ impl App {
 
         let agent_panel_sort = agent_panel_sort_from_config(config.ui.agent_panel_sort);
 
-        let worktree_directory =
-            crate::worktree::expand_tilde_absolute_path(&config.worktrees.directory);
+        let worktree_directory = config.worktrees.directory.clone();
 
         info!(
             pane_scrollback_limit_bytes = config.advanced.scrollback_limit_bytes,
@@ -1005,8 +1004,8 @@ impl App {
         }
 
         if !invalid_section("worktrees") {
-            self.state.worktree_directory =
-                crate::worktree::expand_tilde_absolute_path(&config.worktrees.directory);
+            diagnostics.extend(config.worktrees.diagnostics());
+            self.state.worktree_directory = config.worktrees.directory.clone();
         }
 
         if !invalid_section("theme") {
@@ -1971,6 +1970,28 @@ mod tests {
         let report = app.reload_config();
         assert_eq!(report.status, crate::config::ConfigReloadStatus::Partial);
         assert_eq!(app.state.sidebar_agents, previous_agents);
+
+        std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
+        let _ = std::fs::remove_dir_all(path.parent().unwrap());
+    }
+
+    #[test]
+    fn reload_config_applies_worktree_template_with_diagnostics() {
+        let _guard = config_env_lock().lock().unwrap();
+        let path = temp_config_path("reload-config-worktree-template-diagnostic");
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::env::set_var(crate::config::CONFIG_PATH_ENV_VAR, &path);
+        std::fs::write(&path, "[worktrees]\ndirectory = \"{repo_nam}/wt\"\n").unwrap();
+
+        let mut app = test_app();
+        let report = app.reload_config();
+
+        assert_eq!(report.status, crate::config::ConfigReloadStatus::Partial);
+        assert!(report
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.contains("unknown placeholder {repo_nam}")));
+        assert_eq!(app.state.worktree_directory, "{repo_nam}/wt");
 
         std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
         let _ = std::fs::remove_dir_all(path.parent().unwrap());
