@@ -397,13 +397,12 @@ impl ClientShellState {
                     .duration_since(std::time::UNIX_EPOCH)
                     .map(|duration| duration.as_micros().min(u128::from(u64::MAX)) as u64)
                     .unwrap_or(0);
-                let branch = crate::worktree::generated_branch_slug(
-                    seed,
-                    source
-                        .branch_prefix
-                        .as_deref()
-                        .unwrap_or(crate::worktree::DEFAULT_WORKTREE_BRANCH_PREFIX),
-                );
+                let branch_prefix = source
+                    .branch_prefix
+                    .as_deref()
+                    .unwrap_or(crate::worktree::DEFAULT_WORKTREE_BRANCH_PREFIX);
+                let branch_suffix = crate::worktree::generated_branch_slug(seed, "");
+                let branch = format!("{branch_prefix}{branch_suffix}");
                 let checkout_path_prefix = match source.checkout_path_prefix {
                     Some(prefix) => prefix,
                     None => {
@@ -423,7 +422,7 @@ impl ClientShellState {
                         source_workspace_id: workspace_id,
                         checkout_path_prefix,
                         preserve_branch_path: source.preserve_branch_path,
-                        branch: TextEditor::new(&branch, true),
+                        branch: TextEditor::new_replacing_suffix(branch_prefix, &branch_suffix),
                         checkout_path,
                         error: None,
                         creating: false,

@@ -1239,7 +1239,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
     };
     source.checkout_path_prefix = Some("/repo/wt".into());
     source.preserve_branch_path = true;
-    source.branch_prefix = Some("duologic/".into());
+    source.branch_prefix = Some("team/".into());
     assert!(
         state
             .handle_endpoint_result("boot-1", &request_id, Ok(list_result))
@@ -1258,7 +1258,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         .join("\n");
     assert!(text.contains("new worktree"));
     assert!(text.contains("create and open"));
-    assert!(text.contains("duologic/"));
+    assert!(text.contains("team/"));
     assert!(frame.cursor.as_ref().is_some_and(|cursor| cursor.visible));
 
     assert!(state
@@ -1269,7 +1269,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         &state.overlay,
         Some(ClientShellOverlay::WorktreeCreate(create))
             if create.checkout_path
-                == "/repo/wt/feature/client-shell"
+                == "/repo/wt/team/feature/client-shell"
     ));
     let submit = state.handle_input_bytes(b"\r");
     let [ClientShellAction::Endpoint { request, .. }] = &submit.actions[..] else {
@@ -1279,7 +1279,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         &request.method,
         crate::api::schema::Method::WorktreeCreate(params)
             if params.workspace_id.as_deref() == Some("ws_1")
-                && params.branch.as_deref() == Some("feature/client-shell")
+                && params.branch.as_deref() == Some("team/feature/client-shell")
                 && params.path.is_none()
                 && !params.focus
     ));

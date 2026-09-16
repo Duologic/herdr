@@ -115,7 +115,7 @@ directory = "{repo_root}/wt"
 
 ブランチのスラッシュをチェックアウトのサブディレクトリとして保持するには、`preserve_branch_path = true` を設定します。上の例では、ブランチ `feature/api` は `/home/me/code/project.git/wt/feature-api` ではなく `/home/me/code/project.git/wt/feature/api` を使います。各パス要素はチェックアウトディレクトリ用に引き続きサニタイズされます。
 
-新規 worktree ダイアログの自動生成ブランチ名と、`branch` を省略した `worktree.create` で使う接頭辞を変更するには、`branch_prefix` を設定します。デフォルトは `"worktree/"` です。`branch_prefix = "duologic/"` なら `duologic/calm-river-1234` のような名前になり、空文字列なら接頭辞なしになります。
+新規 worktree ダイアログの自動生成ブランチ名と、`branch` を省略した `worktree.create` で使う接頭辞を変更するには、`branch_prefix` を設定します。デフォルトは `"worktree/"` です。`branch_prefix = "team/"` なら `team/calm-river-1234` のような名前になり、空文字列なら接頭辞なしになります。
 
 worktree アクションは Git ワークスペースの行から使えます。`New worktree` はチェックアウトを作成し、入力したブランチがすでに存在する場合は既存のローカルブランチをチェックアウトし、存在しない場合はブランチを作成します。その後、新しい Herdr ワークスペースとして開き、元のワークスペースの下にグループ化します。`Open worktree...` はそのリポジトリにある既存の Git worktree チェックアウトを一覧表示します。すでに開いているチェックアウトを選ぶとそこへフォーカスし、閉じているチェックアウトを選ぶと同じグループで開きます。
 

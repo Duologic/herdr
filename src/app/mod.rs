@@ -1989,7 +1989,7 @@ mod tests {
         std::env::set_var(crate::config::CONFIG_PATH_ENV_VAR, &path);
         std::fs::write(
             &path,
-            "[worktrees]\ndirectory = \"{repo_nam}/wt\"\npreserve_branch_path = true\nbranch_prefix = \"duologic/\"\n",
+            "[worktrees]\ndirectory = \"{repo_nam}/wt\"\npreserve_branch_path = true\nbranch_prefix = \"team/\"\n",
         )
         .unwrap();
 
@@ -2003,7 +2003,7 @@ mod tests {
             .any(|diagnostic| diagnostic.contains("unknown placeholder {repo_nam}")));
         assert_eq!(app.state.worktree_directory, "{repo_nam}/wt");
         assert!(app.state.worktree_preserve_branch_path);
-        assert_eq!(app.state.worktree_branch_prefix, "duologic/");
+        assert_eq!(app.state.worktree_branch_prefix, "team/");
 
         std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
         let _ = std::fs::remove_dir_all(path.parent().unwrap());

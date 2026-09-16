@@ -7,6 +7,7 @@ pub(super) struct TextEditor {
     text: String,
     cursor: usize,
     replace_on_type: bool,
+    replace_from: usize,
     killed: String,
 }
 
@@ -37,6 +38,15 @@ impl TextEditor {
         editor
     }
 
+    pub fn new_replacing_suffix(prefix: &str, suffix: &str) -> Self {
+        let mut editor = Self::default();
+        editor.insert(prefix);
+        editor.replace_from = editor.text.len();
+        editor.insert(suffix);
+        editor.replace_on_type = true;
+        editor
+    }
+
     pub fn as_str(&self) -> &str {
         &self.text
     }
@@ -45,6 +55,7 @@ impl TextEditor {
         self.text.clear();
         self.cursor = 0;
         self.replace_on_type = false;
+        self.replace_from = 0;
     }
 
     pub fn trim_and_accept(&mut self) {
@@ -52,7 +63,14 @@ impl TextEditor {
         self.text = self.text.trim().to_owned();
         self.cursor = self.cursor.saturating_sub(leading).min(self.text.len());
         self.replace_on_type = false;
+        self.replace_from = 0;
         self.repair_cursor();
+    }
+
+    fn clear_replacement(&mut self) {
+        self.text.truncate(self.replace_from);
+        self.cursor = self.replace_from;
+        self.replace_on_type = false;
     }
 
     fn repair_cursor(&mut self) {
@@ -87,7 +105,7 @@ impl TextEditor {
         }
         let content_changed = !self.replace_on_type || self.text != normalized;
         if self.replace_on_type {
-            self.clear();
+            self.clear_replacement();
         }
         self.text.insert_str(self.cursor, &normalized);
         self.cursor += normalized.len();
@@ -204,7 +222,7 @@ impl TextEditor {
                             || code == KeyCode::Char('h') && ctrl =>
                     {
                         if self.replace_on_type {
-                            self.clear();
+                            self.clear_replacement();
                         } else {
                             self.remove(self.previous(), self.cursor, false);
                         }
@@ -376,6 +394,12 @@ mod tests {
         let mut editor = TextEditor::new("default", true);
         key(&mut editor, KeyCode::Backspace, KeyModifiers::NONE);
         assert!(editor.is_empty());
+        let mut editor = TextEditor::new_replacing_suffix("team/", "generated");
+        editor.insert("feature");
+        assert_eq!(editor.as_str(), "team/feature");
+        let mut editor = TextEditor::new_replacing_suffix("team/", "generated");
+        key(&mut editor, KeyCode::Backspace, KeyModifiers::NONE);
+        assert_eq!(editor.as_str(), "team/");
         let mut editor = TextEditor::new("one two", true);
         key(&mut editor, KeyCode::Char('w'), KeyModifiers::CONTROL);
         assert_eq!(editor.as_str(), "one ");

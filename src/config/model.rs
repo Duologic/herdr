@@ -1598,13 +1598,13 @@ directory = "~/Projects/herdr-worktrees"
 [worktrees]
 directory = "{repo_root}/wt"
 preserve_branch_path = true
-branch_prefix = "duologic/"
+branch_prefix = "team/"
 "#,
         )
         .unwrap();
         assert_eq!(config.worktrees.directory, "{repo_root}/wt");
         assert!(config.worktrees.preserve_branch_path);
-        assert_eq!(config.worktrees.branch_prefix, "duologic/");
+        assert_eq!(config.worktrees.branch_prefix, "team/");
 
         let config: Config = toml::from_str(
             r#"

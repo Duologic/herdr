@@ -706,10 +706,7 @@ mod tests {
             generated_branch_slug(0, DEFAULT_WORKTREE_BRANCH_PREFIX),
             "worktree/brave-river-0000"
         );
-        assert_eq!(
-            generated_branch_slug(9, "duologic/"),
-            "duologic/calm-cloud-0009"
-        );
+        assert_eq!(generated_branch_slug(9, "team/"), "team/calm-cloud-0009");
         assert_eq!(generated_branch_slug(9, ""), "calm-cloud-0009");
     }
 
