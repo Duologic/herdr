@@ -278,6 +278,7 @@ fn every_dialog_and_menu_occludes_its_panel_not_the_whole_screen() {
         ClientShellOverlay::WorktreeCreate(ClientWorktreeCreateOverlay {
             source_workspace_id: "ws_1".into(),
             checkout_path_prefix: "path".into(),
+            preserve_branch_path: false,
             branch: "branch".into(),
             checkout_path: "path".into(),
             error: None,

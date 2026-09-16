@@ -10716,6 +10716,10 @@
                 "null"
               ]
             },
+            "preserve_branch_path": {
+              "default": false,
+              "type": "boolean"
+            },
             "repo_key": {
               "type": "string"
             },

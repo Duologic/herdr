@@ -402,6 +402,7 @@ impl App {
                 .display()
                 .to_string(),
             ),
+            preserve_branch_path: self.state.worktree_preserve_branch_path,
             source_workspace_id: source
                 .workspace_idx
                 .map(|idx| self.public_workspace_id(idx)),

@@ -459,6 +459,7 @@ impl App {
         let agent_panel_sort = agent_panel_sort_from_config(config.ui.agent_panel_sort);
 
         let worktree_directory = config.worktrees.directory.clone();
+        let worktree_preserve_branch_path = config.worktrees.preserve_branch_path;
 
         info!(
             pane_scrollback_limit_bytes = config.advanced.scrollback_limit_bytes,
@@ -503,6 +504,7 @@ impl App {
             should_quit: false,
             request_client_config_reload: false,
             worktree_directory,
+            worktree_preserve_branch_path,
             latest_release_notes,
             product_announcement: startup_product_announcement.map(|announcement| {
                 state::ProductAnnouncementState {
@@ -1006,6 +1008,7 @@ impl App {
         if !invalid_section("worktrees") {
             diagnostics.extend(config.worktrees.diagnostics());
             self.state.worktree_directory = config.worktrees.directory.clone();
+            self.state.worktree_preserve_branch_path = config.worktrees.preserve_branch_path;
         }
 
         if !invalid_section("theme") {
@@ -1981,7 +1984,11 @@ mod tests {
         let path = temp_config_path("reload-config-worktree-template-diagnostic");
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::env::set_var(crate::config::CONFIG_PATH_ENV_VAR, &path);
-        std::fs::write(&path, "[worktrees]\ndirectory = \"{repo_nam}/wt\"\n").unwrap();
+        std::fs::write(
+            &path,
+            "[worktrees]\ndirectory = \"{repo_nam}/wt\"\npreserve_branch_path = true\n",
+        )
+        .unwrap();
 
         let mut app = test_app();
         let report = app.reload_config();
@@ -1992,6 +1999,7 @@ mod tests {
             .iter()
             .any(|diagnostic| diagnostic.contains("unknown placeholder {repo_nam}")));
         assert_eq!(app.state.worktree_directory, "{repo_nam}/wt");
+        assert!(app.state.worktree_preserve_branch_path);
 
         std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
         let _ = std::fs::remove_dir_all(path.parent().unwrap());

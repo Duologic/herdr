@@ -870,6 +870,8 @@ pub struct IndexedKeysConfig {
 pub struct WorktreesConfig {
     /// Checkout root. Supports {repo_root}, {repo_parent}, and {repo_name} placeholders.
     pub directory: String,
+    /// Preserve branch slashes as checkout subdirectories. Default: false.
+    pub preserve_branch_path: bool,
 }
 
 impl WorktreesConfig {
@@ -1197,6 +1199,7 @@ impl Default for WorktreesConfig {
     fn default() -> Self {
         Self {
             directory: "~/.herdr/worktrees".into(),
+            preserve_branch_path: false,
         }
     }
 }
@@ -1577,6 +1580,7 @@ tab_bar_right_separator = " · "
     fn worktrees_directory_defaults_and_parses() {
         let default_config = Config::default();
         assert_eq!(default_config.worktrees.directory, "~/.herdr/worktrees");
+        assert!(!default_config.worktrees.preserve_branch_path);
 
         let toml = r#"
 [worktrees]
@@ -1589,10 +1593,12 @@ directory = "~/Projects/herdr-worktrees"
             r#"
 [worktrees]
 directory = "{repo_root}/wt"
+preserve_branch_path = true
 "#,
         )
         .unwrap();
         assert_eq!(config.worktrees.directory, "{repo_root}/wt");
+        assert!(config.worktrees.preserve_branch_path);
 
         let config: Config = toml::from_str(
             r#"

@@ -426,6 +426,7 @@ pub(super) struct ClientSettingsOverlay {
 pub(super) struct ClientWorktreeCreateOverlay {
     pub(super) source_workspace_id: String,
     pub(super) checkout_path_prefix: String,
+    pub(super) preserve_branch_path: bool,
     pub(super) branch: TextEditor,
     pub(super) checkout_path: String,
     pub(super) error: Option<String>,

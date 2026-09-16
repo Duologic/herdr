@@ -54,6 +54,23 @@ pub(crate) fn branch_to_path_slug(branch: &str) -> String {
     }
 }
 
+pub(crate) fn branch_to_checkout_path(branch: &str, preserve_branch_path: bool) -> PathBuf {
+    if !preserve_branch_path {
+        return PathBuf::from(branch_to_path_slug(branch));
+    }
+
+    let path = branch
+        .split('/')
+        .filter(|component| !component.is_empty())
+        .map(branch_to_path_slug)
+        .fold(PathBuf::new(), |path, component| path.join(component));
+    if path.as_os_str().is_empty() {
+        PathBuf::from(DEFAULT_WORKTREE_PREFIX)
+    } else {
+        path
+    }
+}
+
 pub(crate) fn expand_tilde_path(path: &str) -> PathBuf {
     expand_tilde_path_from_env(path, cfg!(windows), |key| std::env::var_os(key))
 }
@@ -192,8 +209,10 @@ pub(crate) fn default_checkout_path(
     repo_root: &Path,
     repo_name: &str,
     branch: &str,
+    preserve_branch_path: bool,
 ) -> PathBuf {
-    checkout_root(template, repo_root, repo_name).join(branch_to_path_slug(branch))
+    checkout_root(template, repo_root, repo_name)
+        .join(branch_to_checkout_path(branch, preserve_branch_path))
 }
 
 pub(crate) fn worktree_directory_diagnostics(template: &str) -> Vec<String> {
@@ -850,6 +869,7 @@ prunable stale
                 Path::new("/home/me/herdr"),
                 "herdr",
                 "worktree/brave-river",
+                false,
             ),
             PathBuf::from("/home/me/.herdr/worktrees/herdr/worktree-brave-river")
         );
@@ -859,7 +879,7 @@ prunable stale
     fn default_checkout_path_resolves_repository_placeholders() {
         let repo = Path::new("/home/me/repos/herdr.git");
         assert_eq!(
-            default_checkout_path("{repo_root}/wt", repo, "herdr", "feature/api"),
+            default_checkout_path("{repo_root}/wt", repo, "herdr", "feature/api", false),
             PathBuf::from("/home/me/repos/herdr.git/wt/feature-api")
         );
         assert_eq!(
@@ -868,6 +888,7 @@ prunable stale
                 repo,
                 "herdr",
                 "feature/api",
+                false,
             ),
             PathBuf::from("/home/me/repos/herdr.worktrees/feature-api")
         );
@@ -877,8 +898,27 @@ prunable stale
                 repo,
                 "herdr",
                 "feature/api",
+                false,
             ),
             PathBuf::from("/worktrees/herdr/archive/herdr/feature-api")
+        );
+    }
+
+    #[test]
+    fn default_checkout_path_can_preserve_sanitized_branch_components() {
+        assert_eq!(
+            default_checkout_path(
+                "{repo_root}/wt",
+                Path::new("/repos/herdr.git"),
+                "herdr",
+                "feature/client shell",
+                true,
+            ),
+            PathBuf::from("/repos/herdr.git/wt/feature/client-shell")
+        );
+        assert_eq!(
+            branch_to_checkout_path("///", true),
+            PathBuf::from(DEFAULT_WORKTREE_PREFIX)
         );
     }
 

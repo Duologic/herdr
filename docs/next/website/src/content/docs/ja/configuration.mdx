@@ -113,6 +113,8 @@ directory = "{repo_root}/wt"
 
 `/home/me/code/project.git` にあるリポジトリの worktree は `/home/me/code/project.git/wt/<branch-slug>` に作成されます。隣接する worktree ディレクトリには `directory = "{repo_parent}/{repo_name}.worktrees"` を使います。明示的な `worktree create --path` は引き続き優先されます。
 
+ブランチのスラッシュをチェックアウトのサブディレクトリとして保持するには、`preserve_branch_path = true` を設定します。上の例では、ブランチ `feature/api` は `/home/me/code/project.git/wt/feature-api` ではなく `/home/me/code/project.git/wt/feature/api` を使います。各パス要素はチェックアウトディレクトリ用に引き続きサニタイズされます。
+
 worktree アクションは Git ワークスペースの行から使えます。`New worktree` はチェックアウトを作成し、入力したブランチがすでに存在する場合は既存のローカルブランチをチェックアウトし、存在しない場合はブランチを作成します。その後、新しい Herdr ワークスペースとして開き、元のワークスペースの下にグループ化します。`Open worktree...` はそのリポジトリにある既存の Git worktree チェックアウトを一覧表示します。すでに開いているチェックアウトを選ぶとそこへフォーカスし、閉じているチェックアウトを選ぶと同じグループで開きます。
 
 グループ化された worktree も通常の Herdr ワークスペースと同様に動作します。フォーカス、名前変更、クローズができ、それぞれ独自のタブとペインを持ちます。親の行は元のワークスペースです。親の行を閉じると Herdr のグループ全体が閉じますが、チェックアウトのフォルダーやブランチは削除されません。

@@ -1453,6 +1453,12 @@
           "type": "string",
           "default": "\"~/.herdr/worktrees\"",
           "description": "Checkout root. Supports {repo_root}, {repo_parent}, and {repo_name} placeholders; templates append <branch-slug>, while literal paths append <repo>/<branch-slug>."
+        },
+        {
+          "key": "worktrees.preserve_branch_path",
+          "type": "boolean",
+          "default": "false",
+          "description": "Preserve branch slashes as checkout subdirectories instead of replacing them with dashes."
         }
       ]
     },

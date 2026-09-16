@@ -142,6 +142,7 @@ impl App {
                 &source.source_repo_root,
                 &source.repo_name,
                 &branch,
+                self.state.worktree_preserve_branch_path,
             ),
         };
         let checkout_key = crate::worktree::canonical_or_original(&checkout_path);

@@ -1238,6 +1238,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         unreachable!();
     };
     source.checkout_path_prefix = Some("/repo/wt".into());
+    source.preserve_branch_path = true;
     assert!(
         state
             .handle_endpoint_result("boot-1", &request_id, Ok(list_result))
@@ -1266,7 +1267,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         &state.overlay,
         Some(ClientShellOverlay::WorktreeCreate(create))
             if create.checkout_path
-                == "/repo/wt/feature-client-shell"
+                == "/repo/wt/feature/client-shell"
     ));
     let submit = state.handle_input_bytes(b"\r");
     let [ClientShellAction::Endpoint { request, .. }] = &submit.actions[..] else {

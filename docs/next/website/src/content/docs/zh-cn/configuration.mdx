@@ -113,6 +113,8 @@ directory = "{repo_root}/wt"
 
 位于 `/home/me/code/project.git` 的仓库会在 `/home/me/code/project.git/wt/<branch-slug>` 创建 worktree。使用 `directory = "{repo_parent}/{repo_name}.worktrees"` 可创建同级 worktree 目录。显式的 `worktree create --path` 仍然优先。
 
+设置 `preserve_branch_path = true` 可将分支名中的斜杠保留为检出子目录。以上例为例，分支 `feature/api` 会使用 `/home/me/code/project.git/wt/feature/api`，而不是 `/home/me/code/project.git/wt/feature-api`。每个路径组成部分仍会针对检出目录进行清理。
+
 Git 工作区行提供 worktree 操作。`New worktree` 会创建检出：如果输入的分支已存在，则检出该本地分支，否则创建该分支；随后将其作为新的 Herdr 工作区打开，并归组到来源工作区下。`Open worktree...` 会列出该仓库现有的 Git worktree 检出；选择已打开的检出会聚焦它，选择尚未打开的检出会在同一组中打开它。
 
 归组的 worktree 仍像普通 Herdr 工作区一样工作：可以聚焦、重命名和关闭，也可以拥有自己的标签页和窗格。父行是原始工作区。关闭父行会关闭整个 Herdr 组，但不会删除检出目录或分支。

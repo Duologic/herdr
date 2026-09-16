@@ -10,8 +10,23 @@ fn endpoint_path_join(root: &str, component: &str) -> String {
     format!("{}{separator}{component}", root.trim_end_matches(separator))
 }
 
-fn checkout_path_preview(prefix: &str, branch: &str) -> String {
-    endpoint_path_join(prefix, &crate::worktree::branch_to_path_slug(branch))
+fn checkout_path_preview(prefix: &str, branch: &str, preserve_branch_path: bool) -> String {
+    let branch_path = if preserve_branch_path {
+        let separator = if !prefix.starts_with('/') && prefix.contains('\\') {
+            "\\"
+        } else {
+            "/"
+        };
+        branch
+            .split('/')
+            .filter(|component| !component.is_empty())
+            .map(crate::worktree::branch_to_path_slug)
+            .collect::<Vec<_>>()
+            .join(separator)
+    } else {
+        crate::worktree::branch_to_path_slug(branch)
+    };
+    endpoint_path_join(prefix, &branch_path)
 }
 
 impl ClientShellState {
@@ -232,7 +247,11 @@ impl ClientShellState {
         let Some(ClientShellOverlay::WorktreeCreate(create)) = self.overlay.as_mut() else {
             return;
         };
-        create.checkout_path = checkout_path_preview(&create.checkout_path_prefix, &create.branch);
+        create.checkout_path = checkout_path_preview(
+            &create.checkout_path_prefix,
+            &create.branch,
+            create.preserve_branch_path,
+        );
         create.error = None;
     }
 
@@ -250,7 +269,11 @@ impl ClientShellState {
             return;
         }
         create.branch.trim_and_accept();
-        create.checkout_path = checkout_path_preview(&create.checkout_path_prefix, &branch);
+        create.checkout_path = checkout_path_preview(
+            &create.checkout_path_prefix,
+            &branch,
+            create.preserve_branch_path,
+        );
         create.creating = true;
         create.error = None;
         let workspace_id = create.source_workspace_id.clone();
@@ -384,11 +407,16 @@ impl ClientShellState {
                         endpoint_path_join(&worktree_directory, &source.repo_name)
                     }
                 };
-                let checkout_path = checkout_path_preview(&checkout_path_prefix, &branch);
+                let checkout_path = checkout_path_preview(
+                    &checkout_path_prefix,
+                    &branch,
+                    source.preserve_branch_path,
+                );
                 self.overlay = Some(ClientShellOverlay::WorktreeCreate(
                     ClientWorktreeCreateOverlay {
                         source_workspace_id: workspace_id,
                         checkout_path_prefix,
+                        preserve_branch_path: source.preserve_branch_path,
                         branch: TextEditor::new(&branch, true),
                         checkout_path,
                         error: None,
@@ -550,16 +578,36 @@ mod path_tests {
     #[test]
     fn endpoint_path_style_is_independent_of_the_client_os() {
         assert_eq!(
-            checkout_path_preview(&endpoint_path_join("/worktrees/", "repo"), "feature/a"),
+            checkout_path_preview(
+                &endpoint_path_join("/worktrees/", "repo"),
+                "feature/a",
+                false,
+            ),
             "/worktrees/repo/feature-a"
         );
         assert_eq!(
-            checkout_path_preview(&endpoint_path_join(r"C:\worktrees\", "repo"), "feature/a"),
+            checkout_path_preview(
+                &endpoint_path_join(r"C:\worktrees\", "repo"),
+                "feature/a",
+                false,
+            ),
             r"C:\worktrees\repo\feature-a"
         );
         assert_eq!(
-            checkout_path_preview(&endpoint_path_join(r"\\server\share", "repo"), "feature/a"),
+            checkout_path_preview(
+                &endpoint_path_join(r"\\server\share", "repo"),
+                "feature/a",
+                false,
+            ),
             r"\\server\share\repo\feature-a"
+        );
+        assert_eq!(
+            checkout_path_preview("/repo/wt", "feature/api", true),
+            "/repo/wt/feature/api"
+        );
+        assert_eq!(
+            checkout_path_preview(r"C:\repo\wt", "feature/api", true),
+            r"C:\repo\wt\feature\api"
         );
     }
 }

@@ -48,6 +48,7 @@ fn modal_paste_target_requires_a_focused_editable_client_field() {
         ClientWorktreeCreateOverlay {
             source_workspace_id: "ws_1".into(),
             checkout_path_prefix: "/worktrees/repo".into(),
+            preserve_branch_path: false,
             branch: TextEditor::default(),
             checkout_path: String::new(),
             error: None,
