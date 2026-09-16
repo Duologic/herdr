@@ -872,6 +872,8 @@ pub struct WorktreesConfig {
     pub directory: String,
     /// Preserve branch slashes as checkout subdirectories. Default: false.
     pub preserve_branch_path: bool,
+    /// Prefix for generated worktree branch names. Default: "worktree/".
+    pub branch_prefix: String,
 }
 
 impl WorktreesConfig {
@@ -1200,6 +1202,7 @@ impl Default for WorktreesConfig {
         Self {
             directory: "~/.herdr/worktrees".into(),
             preserve_branch_path: false,
+            branch_prefix: crate::worktree::DEFAULT_WORKTREE_BRANCH_PREFIX.into(),
         }
     }
 }
@@ -1581,6 +1584,7 @@ tab_bar_right_separator = " · "
         let default_config = Config::default();
         assert_eq!(default_config.worktrees.directory, "~/.herdr/worktrees");
         assert!(!default_config.worktrees.preserve_branch_path);
+        assert_eq!(default_config.worktrees.branch_prefix, "worktree/");
 
         let toml = r#"
 [worktrees]
@@ -1594,11 +1598,13 @@ directory = "~/Projects/herdr-worktrees"
 [worktrees]
 directory = "{repo_root}/wt"
 preserve_branch_path = true
+branch_prefix = "duologic/"
 "#,
         )
         .unwrap();
         assert_eq!(config.worktrees.directory, "{repo_root}/wt");
         assert!(config.worktrees.preserve_branch_path);
+        assert_eq!(config.worktrees.branch_prefix, "duologic/");
 
         let config: Config = toml::from_str(
             r#"

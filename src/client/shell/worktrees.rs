@@ -397,7 +397,13 @@ impl ClientShellState {
                     .duration_since(std::time::UNIX_EPOCH)
                     .map(|duration| duration.as_micros().min(u128::from(u64::MAX)) as u64)
                     .unwrap_or(0);
-                let branch = crate::worktree::generated_branch_slug(seed);
+                let branch = crate::worktree::generated_branch_slug(
+                    seed,
+                    source
+                        .branch_prefix
+                        .as_deref()
+                        .unwrap_or(crate::worktree::DEFAULT_WORKTREE_BRANCH_PREFIX),
+                );
                 let checkout_path_prefix = match source.checkout_path_prefix {
                     Some(prefix) => prefix,
                     None => {

@@ -804,6 +804,7 @@ pub struct AppState {
     pub request_client_config_reload: bool,
     pub worktree_directory: String,
     pub worktree_preserve_branch_path: bool,
+    pub worktree_branch_prefix: String,
     /// Latest endpoint-owned release notes, cached outside render paths.
     pub latest_release_notes: Option<crate::release_notes::ReleaseNotes>,
     pub product_announcement: Option<ProductAnnouncementState>,
@@ -1049,6 +1050,7 @@ impl AppState {
             request_client_config_reload: false,
             worktree_directory: "/tmp/herdr-worktrees".into(),
             worktree_preserve_branch_path: false,
+            worktree_branch_prefix: crate::worktree::DEFAULT_WORKTREE_BRANCH_PREFIX.into(),
             latest_release_notes: None,
             product_announcement: None,
             view: ViewState {

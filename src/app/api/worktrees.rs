@@ -403,6 +403,7 @@ impl App {
                 .to_string(),
             ),
             preserve_branch_path: self.state.worktree_preserve_branch_path,
+            branch_prefix: Some(self.state.worktree_branch_prefix.clone()),
             source_workspace_id: source
                 .workspace_idx
                 .map(|idx| self.public_workspace_id(idx)),

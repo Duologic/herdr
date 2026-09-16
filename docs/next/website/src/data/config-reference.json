@@ -1459,6 +1459,12 @@
           "type": "boolean",
           "default": "false",
           "description": "Preserve branch slashes as checkout subdirectories instead of replacing them with dashes."
+        },
+        {
+          "key": "worktrees.branch_prefix",
+          "type": "string",
+          "default": "\"worktree/\"",
+          "description": "Prefix for generated branch names shown when creating a worktree. Set an empty string for no prefix."
         }
       ]
     },

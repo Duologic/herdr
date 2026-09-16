@@ -10710,6 +10710,12 @@
         },
         "WorktreeSourceInfo": {
           "properties": {
+            "branch_prefix": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "checkout_path_prefix": {
               "type": [
                 "string",
@@ -10717,7 +10723,6 @@
               ]
             },
             "preserve_branch_path": {
-              "default": false,
               "type": "boolean"
             },
             "repo_key": {

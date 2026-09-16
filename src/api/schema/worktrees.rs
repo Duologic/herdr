@@ -68,6 +68,8 @@ pub struct WorktreeSourceInfo {
     #[serde(default, skip_serializing_if = "super::is_false")]
     pub preserve_branch_path: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub branch_prefix: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_workspace_id: Option<String>,
 }
 

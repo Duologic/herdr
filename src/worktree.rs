@@ -2,6 +2,7 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 const DEFAULT_WORKTREE_PREFIX: &str = "worktree";
+pub(crate) const DEFAULT_WORKTREE_BRANCH_PREFIX: &str = "worktree/";
 const WORKTREE_DIRECTORY_PLACEHOLDERS: [&str; 3] = ["repo_root", "repo_parent", "repo_name"];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,7 +20,7 @@ pub(crate) struct ExistingWorktree {
     pub is_prunable: bool,
 }
 
-pub(crate) fn generated_branch_slug(seed: u64) -> String {
+pub(crate) fn generated_branch_slug(seed: u64, prefix: &str) -> String {
     let adjectives = [
         "brave", "calm", "clear", "green", "lucky", "quiet", "rapid", "silver",
     ];
@@ -29,7 +30,7 @@ pub(crate) fn generated_branch_slug(seed: u64) -> String {
     let adjective = adjectives[(seed as usize) % adjectives.len()];
     let noun = nouns[((seed / adjectives.len() as u64) as usize) % nouns.len()];
     let suffix = seed & 0xffff;
-    format!("{DEFAULT_WORKTREE_PREFIX}/{adjective}-{noun}-{suffix:04x}")
+    format!("{prefix}{adjective}-{noun}-{suffix:04x}")
 }
 
 pub(crate) fn branch_to_path_slug(branch: &str) -> String {
@@ -701,8 +702,15 @@ mod tests {
 
     #[test]
     fn generated_branch_slug_is_worktree_namespaced_and_stable() {
-        assert_eq!(generated_branch_slug(0), "worktree/brave-river-0000");
-        assert_eq!(generated_branch_slug(9), "worktree/calm-cloud-0009");
+        assert_eq!(
+            generated_branch_slug(0, DEFAULT_WORKTREE_BRANCH_PREFIX),
+            "worktree/brave-river-0000"
+        );
+        assert_eq!(
+            generated_branch_slug(9, "duologic/"),
+            "duologic/calm-cloud-0009"
+        );
+        assert_eq!(generated_branch_slug(9, ""), "calm-cloud-0009");
     }
 
     #[test]

@@ -1239,6 +1239,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
     };
     source.checkout_path_prefix = Some("/repo/wt".into());
     source.preserve_branch_path = true;
+    source.branch_prefix = Some("duologic/".into());
     assert!(
         state
             .handle_endpoint_result("boot-1", &request_id, Ok(list_result))
@@ -1257,6 +1258,7 @@ fn worktree_create_previews_the_endpoint_owned_checkout_path() {
         .join("\n");
     assert!(text.contains("new worktree"));
     assert!(text.contains("create and open"));
+    assert!(text.contains("duologic/"));
     assert!(frame.cursor.as_ref().is_some_and(|cursor| cursor.visible));
 
     assert!(state

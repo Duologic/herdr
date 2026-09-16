@@ -460,6 +460,7 @@ impl App {
 
         let worktree_directory = config.worktrees.directory.clone();
         let worktree_preserve_branch_path = config.worktrees.preserve_branch_path;
+        let worktree_branch_prefix = config.worktrees.branch_prefix.clone();
 
         info!(
             pane_scrollback_limit_bytes = config.advanced.scrollback_limit_bytes,
@@ -505,6 +506,7 @@ impl App {
             request_client_config_reload: false,
             worktree_directory,
             worktree_preserve_branch_path,
+            worktree_branch_prefix,
             latest_release_notes,
             product_announcement: startup_product_announcement.map(|announcement| {
                 state::ProductAnnouncementState {
@@ -1009,6 +1011,7 @@ impl App {
             diagnostics.extend(config.worktrees.diagnostics());
             self.state.worktree_directory = config.worktrees.directory.clone();
             self.state.worktree_preserve_branch_path = config.worktrees.preserve_branch_path;
+            self.state.worktree_branch_prefix = config.worktrees.branch_prefix.clone();
         }
 
         if !invalid_section("theme") {
@@ -1986,7 +1989,7 @@ mod tests {
         std::env::set_var(crate::config::CONFIG_PATH_ENV_VAR, &path);
         std::fs::write(
             &path,
-            "[worktrees]\ndirectory = \"{repo_nam}/wt\"\npreserve_branch_path = true\n",
+            "[worktrees]\ndirectory = \"{repo_nam}/wt\"\npreserve_branch_path = true\nbranch_prefix = \"duologic/\"\n",
         )
         .unwrap();
 
@@ -2000,6 +2003,7 @@ mod tests {
             .any(|diagnostic| diagnostic.contains("unknown placeholder {repo_nam}")));
         assert_eq!(app.state.worktree_directory, "{repo_nam}/wt");
         assert!(app.state.worktree_preserve_branch_path);
+        assert_eq!(app.state.worktree_branch_prefix, "duologic/");
 
         std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
         let _ = std::fs::remove_dir_all(path.parent().unwrap());

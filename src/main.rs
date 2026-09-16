@@ -235,6 +235,7 @@ const DEFAULT_CONFIG: &str = r##"# herdr configuration
 # directory = "~/.herdr/worktrees"
 # For repository-local worktrees: directory = "{repo_root}/wt"
 # preserve_branch_path = false
+# branch_prefix = "worktree/"
 
 [ui]
 # Sidebar width (auto-scaled based on workspace names, this sets the default)

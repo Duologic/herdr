@@ -110,7 +110,7 @@ impl App {
                     .duration_since(UNIX_EPOCH)
                     .map(|duration| duration.as_micros().min(u128::from(u64::MAX)) as u64)
                     .unwrap_or(0);
-                crate::worktree::generated_branch_slug(seed)
+                crate::worktree::generated_branch_slug(seed, &self.state.worktree_branch_prefix)
             })
             .trim()
             .to_string();

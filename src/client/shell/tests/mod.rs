@@ -75,6 +75,7 @@ fn worktree_list_result(open_workspace_id: Option<&str>) -> crate::api::schema::
             source_checkout_path: "/repo".into(),
             checkout_path_prefix: None,
             preserve_branch_path: false,
+            branch_prefix: None,
             source_workspace_id: Some("ws_1".into()),
         },
         worktrees: vec![crate::api::schema::WorktreeInfo {
